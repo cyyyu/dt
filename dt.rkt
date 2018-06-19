@@ -7,7 +7,7 @@
 (define make-todo-manager
   (lambda ()
 
-    (define VERSION "1.0.0")
+    (define VERSION "1.1.1")
 
     ;; db
     (define conn (connect))
