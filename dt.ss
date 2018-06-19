@@ -1,7 +1,7 @@
-#! /usr/local/bin/csi -script
+#!/usr/local/bin/racket
+#lang racket
 
-(use redis-client)
-(require-extension srfi-13)
+(require redis kw-utils/partial)
 
 ;; define the todo manager maker
 (define make-todo-manager
@@ -10,17 +10,27 @@
     (define VERSION "1.0.0")
 
     ;; db
-    (redis-connect "127.0.0.1" 6379)
+    (define conn (connect))
+    (define (db-execute command . args)
+      (let ([re (apply (partial send-cmd #:rconn conn command) args)])
+        (if (list? re)
+            (map (lambda (item)
+                   (if (bytes? item)
+                       (bytes->string/utf-8 item)
+                       item)) re)
+            (if (bytes? re)
+                (list (bytes->string/utf-8 re))
+                (list re)))))
     (define (db-add k v)
-      (redis-set k v))
+      (db-execute "SET" k v))
     (define (db-del k)
-      (redis-del k))
+      (db-execute "DEL" k))
     (define (db-getallkeys)
-      (redis-keys "*"))
+      (db-execute "KEYS" "*"))
     (define (db-get k)
-      (redis-get k))
+      (db-execute "GET" k))
     (define (db-flush)
-      (redis-flushall))
+      (db-execute "FLUSHALL"))
 
     ;; wrap a string with a color
     (define (wrap-color s c)
@@ -96,7 +106,7 @@
         (sort-by-id p (cdr keys) (insert sorted (car keys)))))
 
     ;; print finished items at last
-    (define (print-in-order keys #!optional (finished-count  0))
+    (define (print-in-order keys [finished-count  0])
       (when (not (null? keys))
         (let ([text (car (db-get (car keys)))]
               [id (car (string-split (car keys) ":"))]
@@ -116,7 +126,7 @@
     (define (switch-status id status)
       (let ([t1 (car (db-get (string-append id ":0")))]
             [t2 (car (db-get (string-append id ":1")))])
-        (if (and (null? t1) (null? t2))
+        (when (and (null? t1) (null? t2))
           (error "No such id" id))
         (db-del (string-append id ":0"))
         (db-del (string-append id ":1"))
@@ -199,7 +209,7 @@
     ;; dispatch actions
     (define dispatch
       (lambda (symbol)
-        (let ([second-arg (list-index (command-line-arguments) 1)])
+        (let ([second-arg (list-index (vector->list (current-command-line-arguments)) 1)])
           (cond ((string=? symbol "-l") (print-all))
                 ((string=? symbol "-a") (add-todo second-arg))
                 ((string=? symbol "-d") (delete-todo second-arg))
@@ -214,6 +224,6 @@
 ;; main
 (begin
   (let ([manager (make-todo-manager)])
-    (if (null? (command-line-arguments))
+    (if (null? (vector->list (current-command-line-arguments)))
       (manager "-l")
-      (manager (car (command-line-arguments))))))
+      (manager (car (vector->list (current-command-line-arguments)))))))
