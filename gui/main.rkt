@@ -46,13 +46,15 @@
 (define (render-todo-item key)
   (let* ([content (car (db-get key))]
          [id (car (string-split key ":"))]
+         [status (cadr (string-split key ":"))]
          [container (new horizontal-panel%
                          [parent todo-items-container]
                          [vert-margin 4]
                          [style '(border hscroll)])]
          [checkbox (new check-box%
                         [label content]
-                        [parent container])]
+                        [parent container]
+                        [value (string=? status "1")])]
          [del-button (new button%
                           [parent container]
                           [label "✖"]
