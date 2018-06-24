@@ -5,7 +5,7 @@
 (provide indent-print print-todo print-in-order
          print-all print-help print-added
          print-deleted print-finished print-redo-done
-         print-version print-flush-done)
+         print-version print-flush-done sort-by-id)
 
 ;; wrap a string with a color
 (define (chalk s c)
