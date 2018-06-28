@@ -56,7 +56,12 @@
          [checkbox (new check-box%
                         [label content]
                         [parent container]
-                        [value (string=? status "1")])]
+                        [value (string=? status "1")]
+                        [callback (lambda (c e)
+                                    (define val (send c get-value))
+                                    (if val
+                                        (manager "-f" id)
+                                        (manager "-r" id)))])]
          [del-button (new button%
                           [parent container]
                           [label "✖"]
