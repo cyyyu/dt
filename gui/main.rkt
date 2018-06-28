@@ -17,7 +17,14 @@
 (define input-box
   (new text-field%
        [parent outer-frame]
-       [label "Todo"]))
+       [label #f]
+       [callback (lambda (t e)
+                   (define e-type (send e get-event-type))
+                   (when (eq? e-type 'text-field-enter)
+                     (let ([text (send t get-value)])
+                       (manager "-a" text)
+                       (refresh-todo-items-container)
+                       (send input-box set-value ""))))]))
 
 (define (refresh-todo-items-container)
   (let ([children (send todo-items-container get-children)])
@@ -25,18 +32,6 @@
            (send todo-items-container delete-child child))
          children)
     (get-todo-items)))
-
-(define (add-btn-callback btn event)
-  (let ([text (send input-box get-value)])
-    (manager "-a" text)
-    (refresh-todo-items-container)
-    (send input-box set-value "")))
-
-(define add-btn
-  (new button%
-       [parent outer-frame]
-       [label "Add"]
-       [callback add-btn-callback]))
 
 (define todo-items-container
   (new vertical-panel%
@@ -52,7 +47,7 @@
                          [parent todo-items-container]
                          [vert-margin 4]
                          [stretchable-height #f]
-                         [style '(border hscroll)])]
+                         [style '(border auto-hscroll)])]
          [checkbox (new check-box%
                         [label content]
                         [parent container]
