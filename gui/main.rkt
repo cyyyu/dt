@@ -9,7 +9,7 @@
   (new frame%
        [label "Dt"]
        [width 320]
-       [height 200]
+       [height 500]
        [border 12]
        [x 800]
        [y 200]))
@@ -42,7 +42,7 @@
   (new vertical-panel%
        [parent outer-frame]
        [alignment '(left top)]
-       [stretchable-height #f]))
+       [style '(auto-vscroll)]))
 
 (define (render-todo-item key)
   (let* ([content (car (db-get key))]
@@ -51,6 +51,7 @@
          [container (new horizontal-panel%
                          [parent todo-items-container]
                          [vert-margin 4]
+                         [stretchable-height #f]
                          [style '(border hscroll)])]
          [checkbox (new check-box%
                         [label content]
