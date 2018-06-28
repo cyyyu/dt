@@ -29,7 +29,8 @@
 (define (add-btn-callback btn event)
   (let ([text (send input-box get-value)])
     (manager "-a" text)
-    (refresh-todo-items-container)))
+    (refresh-todo-items-container)
+    (send input-box set-value "")))
 
 (define add-btn
   (new button%
