@@ -61,7 +61,8 @@
                                     (define val (send c get-value))
                                     (if val
                                         (manager "-f" id)
-                                        (manager "-r" id)))])]
+                                        (manager "-r" id))
+                                    (refresh-todo-items-container))])]
          [del-button (new button%
                           [parent container]
                           [label "✖"]
@@ -72,8 +73,9 @@
     #t))
 
 (define (get-todo-items)
-  (let ([keys (sort-by-id > (manager "-l") '())])
-    (map render-todo-item keys)))
+  (let ([donekeys (sort-by-id > (get-all-done) '())]
+        [notdonekeys (sort-by-id > (get-all-not-done) '())])
+    (map render-todo-item (append notdonekeys donekeys))))
 
 (get-todo-items)
 (send outer-frame show #t)
