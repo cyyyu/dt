@@ -1,8 +1,9 @@
 #lang racket
 
-(provide db-add db-del db-get db-getallkeys db-flush)
+(provide db-add db-del db-get db-getallkeys
+         db-flush get-all-done get-all-not-done)
 
-(require redis kw-utils/partial )
+(require redis kw-utils/partial racket/list)
 
 (define conn (connect))
 (define (db-execute command . args)
@@ -27,3 +28,17 @@
   (db-execute "GET" k))
 (define (db-flush)
   (db-execute "FLUSHALL"))
+
+(define (get-all-not-done)
+  (define (not-done key)
+    (let ([status (cadr (string-split key ":"))])
+      (equal? status "0")))
+  (let ([allkeys (db-getallkeys)])
+    (filter not-done allkeys)))
+
+(define (get-all-done)
+  (define (not-done key)
+    (let ([status (cadr (string-split key ":"))])
+      (equal? status "0")))
+  (let ([allkeys (db-getallkeys)])
+    (filter-not not-done allkeys)))
